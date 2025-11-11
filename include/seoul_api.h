@@ -29,7 +29,7 @@ public:
     std::string fetchData(const std::string& url) {
         CURL* curl;
         CURLcode res;
-        std::string response_data; // 데이터를 저장할 로컬 변수
+        std::string response_data; // 데이터를 저장할 지역 변수
 
         // cURL 세션 초기화
         curl = curl_easy_init();
@@ -37,7 +37,7 @@ public:
             // 1. 요청할 URL 설정
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
             
-            // 2. 응답 데이터를 처리할 *static* 콜백 함수 설정
+            // 2. 응답 데이터를 처리할 static 콜백 함수 설정
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ApiClient::WriteCallback);
             
             // 3. 콜백 함수로 전달할 사용자 데이터 (response_data 문자열 포인터) 설정
@@ -64,10 +64,7 @@ public:
     }
 
 private:
-    // --- cURL이 수신한 데이터를 저장하기 위한 *static* 콜백 함수 ---
-    // cURL은 C 라이브러리이므로, C++ 클래스의 non-static 멤버 함수를
-    // 직접 콜백으로 사용할 수 없습니다. (this 포인터 문제)
-    // 따라서 반드시 static 함수로 선언해야 합니다.
+    // --- cURL이 수신한 데이터를 저장하기 위한 static 콜백 함수 --
     static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
         size_t realsize = size * nmemb;
         ((std::string*)userp)->append((char*)contents, realsize);
@@ -86,7 +83,7 @@ int main() {
     // 1. ApiClient 객체 생성
     ApiClient client;
 
-    // 2. API 호출하여 데이터 가져오기 (이제 한 줄로 가능!)
+    // 2. API 호출하여 데이터 가져오기
     std::string raw_data = client.fetchData(API_URL);
 
     // 3. 데이터 수신 성공 여부 확인
@@ -95,8 +92,9 @@ int main() {
         return 1; // 프로그램 비정상 종료
     }
 
-    // --- 4. 데이터 파싱 및 출력 (이 부분이 조원들의 클래스로 대체될 부분) ---
-    // 이제 main 함수(또는 다른 클래스)가 데이터 처리/출력을 담당합니다.
+    // --- 4. 데이터 파싱 및 출력 ---
+    // 아래는 정상 호출 확인 여부를 위해 임의로 추가한 코드입니다.
+    // 이곳을 기점으로 이하의 내용을 지우고 각자 클래스에서 구현해주신 부분을 적용하면 될 것 같습니다!
     std::cout << "--- API 요청 성공 ---" << std::endl;
     
     try {
@@ -104,10 +102,6 @@ int main() {
         json api_json = json::parse(raw_data);
 
         std::cout << "\n--- 서울 문화행사 데이터 추출 결과 ---" << std::endl;
-
-
-        // 아래는 정상 호출 확인 여부를 위해 임의로 추가한 코드입니다.
-        // 이곳을 기점으로 이하의 내용 - 145번째 줄까지 -을 지우고 각자 클래스에서 구현해주신 부분을 적용하면 될 것 같습니다!
       
         // 1. 최상위 객체 "culturalEventInfo"에 접근
         if (api_json.contains("culturalEventInfo")) {
